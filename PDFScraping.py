@@ -14,28 +14,34 @@
 # Import libraries
 import tika
 import os
-import csv
+#import csv
 from tika import parser
+import pandas as pd
 
 tika.TikaClientOnly = True
 
 # IMPORTANT NOTE
-# In a command line, navigate to C:\Users\handsct\Downloads and run the following 
-# to open up the PDF scraping server: java -jar tika-server-1.13.jar --port 8080
+# Download the latest verion of java from: https://www.java.com/en/download/win10.jsp
+# Download the latest version of tika server jar file from: https://www.apache.org/dyn/closer.cgi/tika/tika-server-1.24.1.jar
+
+# In a command line, navigate to C:\Users\Tom\Downloads and run the following 
+# to open up the PDF scraping server: java -jar tika-server-1.24.1.jar --port 8080
 
 # Define the folder where the KIIDS are located
-foldername = 'L://My Documents//2015//PDF Scraping//Input PDFs'
+foldername = 'C:/Users/Tom/Desktop/GitHub Page/Blog Repos/Web-and-PDF-Scraping/PDFs'
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # A Manager agnostic approach
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Master_pdf_df = pd.DataFrame(columns = ['fn', 'ISIN', 'OGC', 'Performance Fee'])
+
 for fn in os.listdir(foldername):
     OGCnotfound = 0
     ISINnotfound = 0
     PFeenotfound = 0
     #print (fn)
     pdffn = foldername + '//' + fn
-    #print(pdffn)
+    print(pdffn)
     
     # Open the PDF
     parsedPDF = parser.from_file(pdffn)
@@ -132,20 +138,36 @@ for fn in os.listdir(foldername):
             PFee = ''
         
         fields=[fn, ISIN, OGC, PFee]
-        with open('L://My Documents//2015//PDF Scraping//Summary.csv', 'a', newline='') as f:
-            writer = csv.writer(f)
-            writer.writerow(fields)
+        pdf_df = pd.DataFrame(fields).T
+        pdf_df.columns = ['fn', 'ISIN', 'OGC', 'Performance Fee']
+        
+        Master_pdf_df = Master_pdf_df.append(pdf_df)
+        
+#        with open('Filepath.csv', 'a', newline='') as f:
+#            writer = csv.writer(f)
+#            writer.writerow(fields)
         
     except:
         print("Cannot process " + fn)
-        comment = 'PDF Encrypted'        
-        Exceptionfields = [fn, comment]
+    
+    Master_pdf_df.reset_index(drop = True, inplace = True)
+#        comment = 'PDF Encrypted'        
+#        Exceptionfields = [fn, comment]
         
-        with open('L://My Documents//2015//PDF Scraping//Summary.csv', 'a', newline='') as f:
-            writer = csv.writer(f)
-            writer.writerow(Exceptionfields)
-        pass
+#        with open('Filepath.csv', 'a', newline='') as f:
+#            writer = csv.writer(f)
+#            writer.writerow(Exceptionfields)
+#        pass
 
+Master_pdf_df
+
+# Compare the file count with processed dataframe
+sum([1 for fn in os.listdir(foldername)])
+
+Master_pdf_df.shape[0]
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # For manager specific fn[0:2] == 'AB':
               
